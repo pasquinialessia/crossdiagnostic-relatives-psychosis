@@ -5,23 +5,12 @@ single folder. **Set `code/` as the working directory** in Spyder (or `cd code`)
 — every script reads inputs from `../data/` and writes outputs to
 `../results/<topic>/` (figures to `../figures/`).
 
-**Data files** (`dataset.csv`, `bsnip_relatives_dataset.csv`, and all derived
-CSVs) are provided with the release and live in `../data/`. No build step is
-needed.
-
 **Every modelling script writes its results to CSV** — per-region statistics
 (coefficient/t or F, p, FDR) and a summary table — under `../results/<topic>/`.
 Figure/table generation for the manuscript lives in the `fig*`/`out_*` scripts
 (see the end of this file).
 
-Run order is top-to-bottom: `demographics_table` → `cohens_d_maps / bd_casecontrol /
-casecontrol_stats` → `sex_maps / sex_permutation / sex_by_diagnosis_interaction /
-region_specificity_qc` → `peak_age_ssd / peak_age_bd / model_diagnostics` →
-`crossdx_maps / crossdx_spatial_tests / crossdx_sex_reliability` →
-`relatives_liability / case_vs_relative` → `crossdx_familial_fdr`, then the
-manuscript figure/table builders (`fig*` / `out_*`, listed at the end).
-
-Helper modules (no run order): `swa_lib.py`, `data_utils.py`,
+Helper modules: `swa_lib.py`, `data_utils.py`,
 `compute_relatives_d.py`, `generate_separate_nulls.py`.
 
 ## 01 · Demographics
@@ -33,7 +22,7 @@ Helper modules (no run order): `swa_lib.py`, `data_utils.py`,
 
 Schizophrenia (SCZ), schizoaffective disorder (SAD), and bipolar disorder (BD)
 are analysed separately against controls. Each script selects controls + one
-diagnosis at read time.
+diagnosis 
 
 - `cohens_d_maps.py` — whole-group and sex-stratified Cohen's d surface maps +
   `cohens_d_summary.csv` (per-region d/t/p/FDR for all groups), per diagnosis →
@@ -53,7 +42,7 @@ diagnosis at read time.
 - `sex_permutation.py` — male-vs-female reliability ceiling (1,000 sex perms,
   all four measures). **p is one-sided lower-tail** (`P(null ≤ r_obs)` = divergence
   below the ceiling); column `p_below_ceiling`.
-- `sex_by_diagnosis_interaction.py` — sex×diagnosis interaction (SSD & BD model forms).
+- `sex_by_diagnosis_interaction.py` — sex×diagnosis interaction (SCZ, SAD & BD model forms).
 - `region_specificity_qc.py` — `y = region − hemi` outcome, whole-group model with
   sex×dx and age×dx, both matched samples; per-region + summary CSVs.
   → all under `../results/qc_sensitivity/`.
@@ -65,11 +54,10 @@ vs. controls).
 
 - `swa_lib.py` — shared analysis library (imported by `peak_age_ssd`,
   `peak_age_bd`, and figure scripts).
-- `peak_age_ssd.py` — SSD (SCZ + SAD) sliding-window peak-age analysis →
+- `peak_age_ssd.py` — SCZ + SAD sliding-window peak-age analysis →
   `../results/swa_peak_age/`.
 - `peak_age_bd.py` — BD sliding-window peak-age → `../results/swa_peak_age/bd/`.
-- `model_diagnostics.py` — JB/BP/Cook/VIF diagnostics + laterality + age×condition
-  interaction → `../results/qc_sensitivity/diagnostics/`.
+
 
 ## 05 · Cross-diagnostic
 
@@ -77,19 +65,14 @@ vs. controls).
   `../results/crossdiagnostic/`.
 - `crossdx_spatial_tests.py` — disorder-pair map correlations, spin/shuffle +
   global FDR.
-- `crossdx_sex_reliability.py` — sex-permutation reliability for the
-  cross-diagnostic correlations (female−male difference, two-sided).
+
 
 ## 06 · Familial analysis (BSNIP)
 
-- `relatives_liability.py` — relative-vs-CN & proband-vs-CN maps, recapitulation
-  correlation (label-permutation null) + attenuation slope, the **liability
-  gradient** as a **categorical group factor** (omnibus F, FDR, adjusted group
-  means, monotonicity) and cross-check vs the main SSD/BD disease maps →
-  `../results/relatives/`.
-- `case_vs_relative.py` — **proband-vs-relative contrast**: OLS model per region
-  with Clinical as reference category; positive Cohen's d = relative shows MORE
-  than clinical. Writes `_supp_case_vs_relative.csv` and per-disorder Cohen's d
+- `relatives_liability.py` — relative-vs-CN & clinical-vs-CN maps, recapitulation
+  correlation (label-permutation null) 
+- `case_vs_relative.py` — **clinical-vs-relative contrast**: OLS model per region
+  with Clinical as reference category. Writes `_supp_case_vs_relative.csv` and per-disorder Cohen's d
   `.npy` arrays → `../results/relatives/case_vs_relative/`.
 
 ## 07 · Cross-diagnostic familial matrix
@@ -101,15 +84,6 @@ vs. controls).
   `../results/relatives_reviewer/`.
 
 ---
-
-### Recent audit fixes (see reports/MODEL_DIAGNOSTICS_REPORT.md)
-- `sex_permutation` / `crossdx_sex_reliability` reliability-ceiling p corrected
-  to one-sided lower-tail.
-- `crossdx_maps` bootstrap now runs on the full matched sample (`df`), not a
-  leftover females-only frame.
-- `cohens_d_maps` summary CSV now includes the whole-group columns.
-- `crossdx_familial_fdr` rel-vs-rel FDR excludes the trivial diagonal
-  self-correlations.
 
 ## Manuscript figures & supplementary (final paper)
 
@@ -169,4 +143,3 @@ the modelling scripts above).
 - `out_supplementary.py` — assembles the single **Supplementary Material**
   (Figures S1–S6 + Tables S1–S10) → `../reports/Supplementary_Material.docx`.
 
-_Superseded / dropped analyses (BHRCS development, cross-study meta, exploratory brain plots) were moved to `../_archive/`._
